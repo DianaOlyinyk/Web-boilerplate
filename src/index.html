@@ -16,6 +16,342 @@
 
    <body itemscope itemtype="http://schema.org/WebPage">
       <script type="text/javascript" src="./js/app.js"></script>
-      
+      <div id="page">
+        <header>
+            <h1 id="title">Teachinder</h1>
+            <div id="search">
+                <input type="text" id="search-input" placeholder="Name, note or age to search">
+                <button id="search-button">Search</button>
+            </div>
+            <nav id="navigation">
+                <a href=#teachers>Teachers</a>
+                <a href=#statistics>Statistics</a>
+                <a href=#favourites>Favourite</a>
+                <a href=#about>About</a>
+            </nav>
+            <button id="add-button">Add Teacher</button>
+        </header>
+        <main>   
+            <section id="filters">
+                <h2>Top Teachers</h2>
+                <div class="filter">
+                    <label id="age">Age:
+                        <select id="age" name="age">
+                            <option value="">Any</option>
+                            <option value="18-31">18-31</option>
+                            <option value="31-40">31-40</option>
+                            <option value="41-50">41-50</option>
+                            <option value="51+">51+</option>
+                        </select>
+                    </label>
+                    <label id="region">Region:
+                        <select id="region" name="region">
+                            <option value="">Any</option>
+                            <option value="europe">Europe</option>
+                            <option value="asia">Asia</option>
+                            <option value="america">America</option>
+                            <option value="africa">Africa</option>
+                        </select>
+                    </label>
+                    <label id="sex">Sex:
+                        <select id="sex" name="sex">
+                            <option value="">Any</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </label>
+                    <label id="with_photo">Only with photo:
+                        <input type="checkbox" id="with_photo" name="with_photo">       
+                    </label>
+                    <label id="favorites_only">Only with followers:
+                        <input type="checkbox" id="favorites_only" name="favorites_only">
+                    </label>
+                </div>
+                <div id="teachers">
+                    <article class="teacher">
+                        <div id="photo"><img src="images\photos\46.jpg" alt="Teacher 1"></div>
+                        <h3>Ihor <br>Tkachuk</h3>
+                        <p>Chemistry</p>
+                        <small>Ukraine</small>
+                    </article>
+                    <article class="teacher">
+                        <div id="photo"><img src="images\photos\50.jpg" alt="Teacher 1"></div>
+                        <h3>Prag <br>Rameshbabu</h3>
+                        <p>Chess</p>
+                        <small>India</small>
+                    </article>
+                    <article class="teacher">
+                        <div id="photo"><img src="images\photos\10.jpg" alt="Teacher 1"></div>
+                        <h3>Floor <br>Jansen</h3>
+                        <p>Vocal</p>
+                        <small>Denmark</small>
+                    </article>
+                    <article class="teacher">
+                        <div id="photo"><img src="images\photos\60.jpg" alt="Teacher 1"></div>
+                        <h3>Ari <br>Tang</h3>
+                        <p>Biology</p>
+                        <small>China</small>
+                    </article>
+                    <article class="teacher">
+                        <div id="photo"><img src="images\photos\62.jpg" alt="Teacher 1"></div>
+                        <h3>John <br>Burke</h3>
+                        <p>Computer Science</p>
+                        <small>Belgium</small>
+                    </article>
+                    <article class="teacher">
+                        <div id="photo"><img src="images\photos\53.jpg" alt="Teacher 1"></div>
+                        <h3>Rachel <br>Andrew</h3>
+                        <p>Medicine</p>
+                        <small>UK</small>
+                    </article>
+                    <article class="teacher">
+                        <div id="photo"><img src="images\photos\23.jpg" alt="Teacher 1"></div>
+                        <h3>Anna <br>Muzichyk</h3>
+                        <p>Chess</p>
+                        <small>Belarus</small>
+                    </article>
+                    <article class="teacher">
+                        <div id="photo"><img src="images\photos\75.jpg" alt="Teacher 1"></div>
+                        <h3>Radoslaw <br>Ljuboevic</h3>
+                        <p>Physics</p>
+                        <small>Poland</small>
+                    </article>
+                </div>
+            </section>
+            <section id="statistics">
+                <h1>Statistics</h1>
+                <table id="statistics-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Speciality</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Nationality</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Daisy Alexander</td>
+                            <td>Chemistry</td>
+                            <td>28</td>
+                            <td>Female</td>
+                            <td>Vietnam</td>
+                        </tr>
+                        <tr>
+                            <td>Julia Bradley</td>
+                            <td>Math</td>
+                            <td>26</td>
+                            <td>Female</td>
+                            <td>USA</td>
+                        </tr>
+                        <tr>
+                            <td>Rita Hart</td>
+                            <td>Art</td>
+                            <td>41</td>
+                            <td>Female</td>
+                            <td>Ireland</td>
+                        </tr>
+                        <tr>
+                            <td>Jonathan Jacobs</td>
+                            <td>Math</td>
+                            <td>32</td>
+                            <td>Male</td>
+                            <td>England</td>
+                        </tr>
+                        <tr>
+                            <td>Nathaniel White</td>
+                            <td>Computer Science</td>
+                            <td>37</td>
+                            <td>Male</td>
+                            <td>Austria</td>
+                        </tr>
+                        <tr>
+                            <td>Frank Medina</td>
+                            <td>English</td>
+                            <td>43</td>
+                            <td>Male</td>
+                            <td>Italy</td>
+                        </tr>
+                        <tr>
+                            <td>Ella Curtis</td>
+                            <td>Chess</td>
+                            <td>34</td>
+                            <td>Female</td>
+                            <td>USA</td>
+                        </tr>
+                        <tr>
+                            <td>Claire Simmons</td>
+                            <td>Art</td>
+                            <td>38</td>
+                            <td>Female</td>
+                            <td>Netherlands</td>
+                        </tr>
+                        <tr>
+                            <td>Benjamin Knight</td>
+                            <td>Biology</td>
+                            <td>44</td>
+                            <td>Male</td>
+                            <td>Scotland</td>
+                        </tr>
+                        <tr>
+                            <td>Norma Rose</td>
+                            <td>Statistics</td>
+                            <td>36</td>
+                            <td>Female</td>
+                            <td>France</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="pagination">
+                    <span class="page-number">1</span>
+                    <span class="page-number">2</span>
+                    <span class="page-number">3</span>
+                    <span class="page-number">Last</span>
+            </section>
+            <section id="favourites">
+                <h2>Favourites</h2>
+                <div class="favourite-teachers">
+                    <div id="arrow-left" class="arrow">&#10094;</div>
+                    <div id="teachers-list">
+                        <div id="teacher_card">
+                            <div id="photo">
+                                <img src="images\photos\46.jpg" alt="Teacher 1">
+                            </div>
+                            <h3>Ihor <br>Tkachuk</h3>
+                            <small>Ukraine</small>
+                        </div>
+                        <div id="teacher_card">
+                            <div id="photo">
+                                <img src="images\photos\23.jpg" alt="Teacher 1">
+                            </div>
+                            <h3>Anna <br>Makarevich</h3>
+                            <small>Belarus</small>
+                        </div>
+                        <div id="teacher_card">
+                            <div id="photo">
+                                <img src="images\photos\62.jpg" alt="Teacher 1">
+                            </div>
+                            <h3>John <br>Burke</h3>
+                            <small>Belgium</small>
+                        </div>
+                        <div id="teacher_card">
+                            <div id="photo">
+                                <img src="images\photos\60.jpg" alt="Teacher 1">
+                            </div>
+                            <h3>Ari <br>Tang</h3>
+                            <small>China</small>
+                        </div>
+                        <div id="teacher_card">
+                            <div id="photo">
+                                <img src="images\photos\10.jpg" alt="Teacher 1">
+                            </div>
+                            <h3>Floor <br>Jansen</h3>
+                            <small>Denmark</small>
+                        </div>
+                    </div>
+                    <div id="arrow-right" class="arrow">&#10095;</div>
+                </div>
+            </section>
+            <section id="about">
+                <p>Teachinder is a platform that connects students with teachers based on their preferences and requirements. You can search for teachers by name, subject, or location, and filter the results based on age, region, sex, and other criteria. You can also view statistics about the teachers and add your favorite teachers to your list.</p>
+            </section>   
+        </main>
+        <footer id="footer">
+                <nav id="navigation">
+                <a href=#teachers>Teachers</a>
+                <a href=#statistics>Statistics</a>
+                <a href=#favourites>Favourite</a>
+                <a href=#about>About</a>
+            </nav>
+            <button id="add-button">Add Teacher</button>
+        </footer>
+    </div>
+    <!---Static Pop-up-->
+    <div id="add-teacher-popup">
+        <div id="info">
+            <span id="AddTeacher">Add Teacher</span>
+            <span id="close">X</span>
+        </div>
+        <div id="form">
+            <form>
+                <label id="name">Name:
+                    <input type="text" id="name" name="name" required>
+                </label>
+                <label id="subject">Subject:
+                    <select id="subject" name="subject" required>
+                        <option value="">Select a subject</option>
+                        <option value="math">Math</option>
+                        <option value="science">Computer Science</option>
+                        <option value="art">Art</option>
+                        <option value="chemistry">Chemistry</option>
+                        <option value="history">History</option>
+                        <option value="english">English</option>
+                        <option value="physics">Physics</option>
+                        <option value="biology">Biology</option>
+                        <option value="chess">Chess</option>
+                        <option value="Statistics">Statistics</option>
+                    </select>
+                </label>
+                <label id="region">Region:
+                    <select id="region" name="region" required>
+                        <option value="">Select a region</option>
+                        <option value="america">America</option>
+                        <option value="asia">Asia</option>
+                        <option value="europe">Europe</option>
+                        <option value="africa">Africa</option>
+                    </select>
+                </label>
+                <label id="city">City:
+                    <input type="text" id="city" name="city" required>
+                </label>
+                <label id="email">Email:
+                    <input type="email" id="email" name="email" required>
+                </label>
+                <label id="phone">Phone:
+                    <input type="tel" id="phone" name="phone" required>
+                </label>    
+                <label id="date_of_birth">Date of Birth:
+                    <input type="date" id="date_of_birth" name="date_of_birth" required>
+                </label>
+                <fieldset id="gender">
+                    <legend>Gender:</legend>
+                    <label>
+                        <input type="radio" id="male" name="gender" value="male" required>
+                        Male
+                    </label>
+                    <label>
+                        <input type="radio" id="female" name="gender" value="female" required>
+                        Female
+                    </label>
+                </fieldset>
+                <label id="color">Background Color:
+                    <!--Logic in CSS-->
+                </label>
+                <textarea id="bio" name="bio" placeholder="Write a short bio about yourself..." required></textarea>
+                <button type="submit" id="submit">Add</button>
+            </form>
+        </div>  
+    </div>
+
+    <!-- Popup for teacher information -->
+    <div id="teacher-info">
+        <article id="teacher-card">
+            <div class="photo">
+                <img src="photos\46.jpg" alt="Teacher 1">
+            </div>
+            <h2 class="teacher-name">Ihor Tkachuk</h2>
+            <span class="favorite-star">&#9734;</span>
+            <h3 class="teacher-subject">Chemistry</h3>
+            <p class="teacher-location">Kyiv, Ukraine</p>
+            <p class="teacher-age">35, Male</p>
+            <p class="teacher-email">
+            <a href="ihor_tkachuk@domain.com">ihor_tkachuk@domain.com</a>
+            </p>
+            <p class="teacher-phone">+380 123 456 789</p>
+            <a href="#" class="toggle-map">Toggle map</a>
+            <button class="close-popup">X</button>
+        </article>
+    </div>
   </body>
 </html>
