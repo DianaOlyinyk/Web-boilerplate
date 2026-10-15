@@ -3,13 +3,15 @@ import additionalUsers from './test-module.js';
 /** ******** Your code here! *********** */
 
 let subjects = ["Mathematics", "Physics", "English", "Computer Science", "Dancing", "Chess", "Biology", "Chemistry", "Law", "Art", "Medicine", "Statistics"];
-
+let users = formatUsers(randomUserMock);
+let currentTeacherId = -1;
+let favoriteTeachers = [];
 
 function formatUsers(users) {
     for (let i = 0; i < users.length; i++) {
         users[i].id = i + 1;
         users[i].course = subjects[Math.floor(Math.random() * subjects.length)];
-        users[i].favourite = Math.random() < 0.5 ? true : false;
+        users[i].favourite = false;
         users[i].bg_color = "#" + Math.floor(Math.random() * 16777215).toString(16);
         users[i].note = users[i].note || "No notes available";
     }
@@ -196,5 +198,139 @@ function getMatchingPercentage(users, predicate) {
 
     return Number(percentage.toFixed(2));
 }
+
+/*
+    DOM Interaction Functions
+*/
+
+function renderTeacher(){
+    
+    let teachers = document.querySelector("#teachers");
+    teachers.innerHTML = "";
+    for (let i = 0; i < users.length; i++) {
+       let article = document.createElement("article");
+       article.classList.add("teacher");
+       let div = document.createElement("div");
+       div.id = "photo";
+       let img = document.createElement("img");
+       img.src = users[i].picture.medium
+        
+        let h3 = document.createElement("h3");
+        
+        h3.innerHTML = users[i].name.first + "<br>" + users[i].name.last;
+        let p = document.createElement("p");
+        p.textContent = users[i].course;
+        
+        let small = document.createElement("small");
+        small.textContent = users[i].location.country;
+        
+        div.appendChild(img);
+       
+        article.appendChild(div);
+        article.appendChild(h3);
+        article.appendChild(p);
+        article.appendChild(small);
+        teachers.appendChild(article);
+    }
+}
+
+
+
+function showPopup() {
+    let popup = document.querySelector("#teacher-info");
+    let teachers = document.querySelector("#teachers");
+
+    popup.querySelector(".close-popup").addEventListener("click", function () {
+        popup.style.display = "none";
+    });
+
+    teachers.addEventListener("click", function (event) {
+        let article = event.target.closest(".teacher");
+
+        if (!article || !teachers.contains(article)) return;
+
+        let index = Array.from(teachers.children).indexOf(article);
+        let teacher = users[index];
+
+        currentTeacherId = teacher.id;
+        popup.style.display = "flex";
+
+        popup.querySelector(".photo img").src = teacher.picture.large;
+        popup.querySelector(".teacher-name").textContent =
+            teacher.name
+                ? teacher.name.first + " " + teacher.name.last
+                : teacher.full_name;
+
+        popup.querySelector(".teacher-subject").textContent = teacher.course;
+
+        popup.querySelector(".teacher-location").textContent =
+            teacher.location
+                ? teacher.location.city + ", " + teacher.location.country
+                : teacher.city + ", " + teacher.country;
+
+        popup.querySelector(".teacher-age").textContent =
+            (teacher.dob ? teacher.dob.age : teacher.age) + ", " + teacher.gender;
+
+        popup.querySelector(".teacher-phone").textContent = teacher.phone;
+        popup.querySelector(".teacher-email").textContent = teacher.email;
+        popup.querySelector(".favorite-star").textContent =
+            teacher.favourite ? "★" : "☆";
+    });
+}
+
+function addToFavorites() {
+    let star = document.querySelector("#teacher-info .favorite-star");
+    star.addEventListener("click", function() {
+        console.log("Current Teacher ID:", currentTeacherId);
+        star.textContent = star.textContent === "☆" ? "★" : "☆";
+       
+            if (!favoriteTeachers.includes(currentTeacherId)) {
+                favoriteTeachers.push(currentTeacherId);
+                users.find(user => user.id === currentTeacherId).favourite = true;
+            }
+            else {
+                favoriteTeachers.splice(favoriteTeachers.indexOf(currentTeacherId), 1);
+                users.find(user => user.id === currentTeacherId).favourite = false;
+            }
+            renderFavorites();
+    });
+    console.log("Favorite Teachers:", favoriteTeachers);
+    renderFavorites();
+}
+
+function renderFavorites() {
+    let teachers = document.querySelector("#teachers-list");
+    if (!teachers) return;
+    teachers.innerHTML = "";
+    for (let i = 0; i < favoriteTeachers.length; i++) {
+        let teacher = users.find(user => user.id === favoriteTeachers[i]);
+        if (!teacher) continue;
+
+        let teacherCard = document.createElement("div");
+        teacherCard.id = "teacher_card";
+        let photo = document.createElement("div");
+        photo.id = "photo";
+        let img = document.createElement("img");
+        img.src = teacher.picture.medium;
+        photo.appendChild(img);
+        teacherCard.appendChild(photo);
+
+        let name = document.createElement("h3");
+        name.textContent = teacher.name.first + " " + teacher.name.last;
+        teacherCard.appendChild(name);
+
+        let country = document.createElement("small");
+        country.textContent = teacher.location.country;
+        teacherCard.appendChild(country);
+        teachers.appendChild(teacherCard);
+    }
+}
+
+
+renderTeacher();
+showPopup();
+// addTeacherModal();
+addToFavorites();
+
 
 
