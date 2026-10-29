@@ -313,12 +313,14 @@ function renderFavorites() {
     let teachers = document.querySelector("#teachers-list");
     if (!teachers) return;
     teachers.innerHTML = "";
+    
     for (let i = 0; i < favoriteTeachers.length; i++) {
         let teacher = users.find(user => user.id === favoriteTeachers[i]);
         if (!teacher) continue;
 
         let teacherCard = document.createElement("div");
         teacherCard.id = "teacher_card";
+        
         let photo = document.createElement("div");
         photo.id = "photo";
         let img = document.createElement("img");
@@ -333,6 +335,34 @@ function renderFavorites() {
         let country = document.createElement("small");
         country.textContent = teacher.location.country;
         teacherCard.appendChild(country);
+
+        teacherCard.addEventListener("click", function() {
+            let popup = document.querySelector("#teacher-info");
+            if (!popup) return;
+
+            currentTeacherId = teacher.id;
+            popup.style.display = "flex";
+
+            popup.querySelector(".photo img").src = teacher.picture.large;
+            popup.querySelector(".teacher-name").textContent = 
+                teacher.name ? teacher.name.first + " " + teacher.name.last : teacher.full_name;
+
+            popup.querySelector(".teacher-subject").textContent = teacher.course;
+            popup.querySelector(".teacher-location").textContent = 
+                teacher.location ? teacher.location.city + ", " + teacher.location.country : teacher.city + ", " + teacher.country;
+
+            popup.querySelector(".teacher-age").textContent = 
+                (teacher.dob ? teacher.dob.age : teacher.age) + ", " + teacher.gender;
+
+            popup.querySelector(".teacher-phone").textContent = teacher.phone;
+            popup.querySelector(".teacher-email").textContent = teacher.email;
+           
+            let star = popup.querySelector(".favorite-star");
+            if (star) {
+                star.textContent = teacher.favourite ? "★" : "☆";
+            }
+        });
+
         teachers.appendChild(teacherCard);
     }
 }
