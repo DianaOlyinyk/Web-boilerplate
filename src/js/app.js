@@ -106,30 +106,33 @@ function filterUsers(users, filters = {}) {
 }
 
 function sortUsers(users, sortBy = 'full_name', order = 'asc') {
-  
-    const allowedFields = ['full_name', 'age', 'b_day', 'country'];
-    if (!allowedFields.includes(sortBy)) {
-        console.warn(`Поле "${sortBy}" недоступне для сортування. Використовуйте одне з: ${allowedFields.join(', ')}`);
-        return users;
-    }
-
+    const allowedFields = ['full_name', 'course', 'age', 'gender', 'country'];
+    
     const modifier = order.toLowerCase() === 'desc' ? -1 : 1;
 
     return [...users].sort((a, b) => {
-        let valA = a[sortBy];
-        let valB = b[sortBy];
+        let valA, valB;
+        if (sortBy === 'full_name') {
+            valA = `${a.name.first} ${a.name.last}`;
+            valB = `${b.name.first} ${b.name.last}`;
+        } else if (sortBy === 'age') {
+            valA = a.dob ? a.dob.age : a.age;
+            valB = b.dob ? b.dob.age : b.age;
+        } else if (sortBy === 'country') {
+            valA = a.location ? a.location.country : a.country;
+            valB = b.location ? b.location.country : b.country;
+        } else {
+            valA = a[sortBy];
+            valB = b[sortBy];
+        }
 
         if (valA === undefined || valA === null) return 1;
         if (valB === undefined || valB === null) return -1;
 
-        if (sortBy === 'b_day') {
-            valA = new Date(valA).getTime();
-            valB = new Date(valB).getTime();
-        }
-
         if (typeof valA === 'number' && typeof valB === 'number') {
             return (valA - valB) * modifier;
         }
+        
         return String(valA).localeCompare(String(valB), undefined, { numeric: true, sensitivity: 'base' }) * modifier;
     });
 }
@@ -203,17 +206,17 @@ function getMatchingPercentage(users, predicate) {
     DOM Interaction Functions
 */
 
-function renderTeacher(){
+function renderTeacher(users = []) {
     
     let teachers = document.querySelector("#teachers");
     teachers.innerHTML = "";
     for (let i = 0; i < users.length; i++) {
-       let article = document.createElement("article");
-       article.classList.add("teacher");
-       let div = document.createElement("div");
-       div.id = "photo";
-       let img = document.createElement("img");
-       img.src = users[i].picture.medium
+        let article = document.createElement("article");
+        article.classList.add("teacher");
+        let div = document.createElement("div");
+        div.id = "photo";
+        let img = document.createElement("img");
+        img.src = users[i].picture.medium
         
         let h3 = document.createElement("h3");
         
@@ -236,7 +239,7 @@ function renderTeacher(){
 
 
 
-function showPopup() {
+function showPopup(users=[]) {
     let popup = document.querySelector("#teacher-info");
     let teachers = document.querySelector("#teachers");
 
@@ -325,12 +328,305 @@ function renderFavorites() {
         teachers.appendChild(teacherCard);
     }
 }
+let age = "Any";
+function filterByAge(){
+    let selectAge = document.querySelector("#age")
+    
+    selectAge.addEventListener("change", function(){
+
+        age = selectAge.value;
+        AllFilter();
+        /*let filteredUsers = users.filter(user => {
+            if (selectAge.value.includes("-")) {
+                let ageRange = selectAge.value.split("-");
+                return user.dob.age >= parseInt(ageRange[0]) && user.dob.age <= parseInt(ageRange[1]);
+            }
+            else if (selectAge.value === "51+") {
+                return user.dob.age >= 51;
+            }
+            else {
+                return true;
+            }
+        });
+        */
 
 
-renderTeacher();
-showPopup();
-// addTeacherModal();
+    });
+}
+let country = "Any"
+function countryFilter() {
+    let selectCountry = document.querySelector("#region");
+    let uniqueCountries = [ "Any", ...new Set(users.map(user => user.location.country))];
+
+    uniqueCountries.forEach(country => {
+        let option = document.createElement("option");
+        option.value = country;
+        option.textContent = country;
+        selectCountry.appendChild(option);
+    });
+    
+
+    selectCountry.addEventListener("change", function() {
+        country = selectCountry.value.toLowerCase()
+        AllFilter();
+       /* let filteredUsers = users.filter(user => {
+            return user.location.country.toLowerCase() === selectCountry.value.toLowerCase();
+        });
+        renderTeacher(filteredUsers);*/
+    });
+}
+
+let sex = "any";
+function filterBySex() {
+    let selectSex = document.querySelector("#sex");
+    
+    selectSex.addEventListener("change", function() {
+        sex = selectSex.value.toLowerCase();
+        AllFilter();
+       /* let filteredUsers = users.filter(user => {
+            if(selectSex.value === "Any") {return true;}
+            else return user.gender.toLowerCase() === selectSex.value.toLowerCase();
+        });
+        renderTeacher(filteredUsers);*/
+    });
+}
+
+let photo = true
+function filterByPhoto() {
+    let photoCheckboxOption = document.querySelector("#with_photo");
+    if (!photoCheckboxOption) return;
+
+    photoCheckboxOption.addEventListener("change", function() {
+        photo = photoCheckboxOption.checked;
+        AllFilter();
+       /* let filteredUsers = users.filter(user => {
+          
+            const medium = user.picture ? user.picture.medium : "";
+            const large = user.picture ? user.picture.large : "";
+            let hasRealPhoto = medium !== "https://via.placeholder.com/150" 
+                && large !== "https://via.placeholder.com/300";
+
+            return !photoCheckboxOption.checked || hasRealPhoto;
+        });
+
+        renderTeacher(filteredUsers);*/
+       
+    });
+}
+
+function AllFilter()
+{
+       let filteredUsers = users.filter(user => {
+          
+            const medium = user.picture ? user.picture.medium : "";
+            const large = user.picture ? user.picture.large : "";
+            let hasRealPhoto = medium !== "https://via.placeholder.com/150" 
+                && large !== "https://via.placeholder.com/300";
+
+             return !photo || hasRealPhoto ;
+        });
+        console.log("photo");
+        console.log("Photos " + filteredUsers);
+        filteredUsers = filteredUsers.filter(user => {
+            if(sex.toLowerCase() === "any") {return true;}
+            else return user.gender.toLowerCase() === sex.toLowerCase();
+        });
+        console.log("gender");
+         console.log("Gender"+filteredUsers);
+        filteredUsers = filteredUsers.filter(user => {
+            if (age.includes("-")) {
+                let ageRange = age.split("-");
+                return user.dob.age >= parseInt(ageRange[0]) && user.dob.age <= parseInt(ageRange[1]);
+            }
+            else if (age === "51+") {
+                return user.dob.age >= 51;
+            }
+            else {
+                return true;
+            }
+        });
+        console.log("Age")
+        console.log(filteredUsers);
+
+        filteredUsers = filteredUsers.filter(user => {
+            if(country.toLowerCase()==="any"){
+                return true;
+            }
+            else return user.location.country.toLowerCase() === country;
+        });
+
+         console.log("Country")
+        console.log(filteredUsers);
+        
+        renderTeacher(filteredUsers);
+        renderTable(filteredUsers);
+        showPopup(filteredUsers);
+}
+
+
+
+function searchTeacher(){
+    let searchButton = document.querySelector("#search-button");
+    let input = document.querySelector("#search-input");
+    searchButton.addEventListener("click", function(){
+        let filteredUsers = users.filter(user => {
+            return user.name.first.toLowerCase().includes(input.value.toLowerCase()) || 
+            user.note.toLowerCase().includes(input.value.toLowerCase()) ||
+            user.dob.age === parseInt(input.value);
+        });
+        renderTeacher(filteredUsers);
+    });
+}
+
+function addTeacher() {
+    let addButton = document.querySelector("#add-button");
+    let popup = document.querySelector("#add-teacher-popup");
+    let form = popup.querySelector("form");
+    let closeButton = document.querySelector("#close");
+
+    addButton.addEventListener("click", function () {
+        popup.style.display = "flex";
+    });
+
+    closeButton.addEventListener("click", function () {
+        popup.style.display = "none";
+    });
+
+    form.addEventListener("submit", function (event) {
+        event.preventDefault(); 
+
+        const fullName = form.querySelector("#name").value.trim();
+        const nameParts = fullName.split(" ");
+        const firstName = nameParts[0] || fullName;
+        const lastName = nameParts.slice(1).join(" ") || "";
+
+        const dobValue = form.querySelector("#date_of_birth").value;
+        const birthDate = new Date(dobValue);
+        const ageDiffMs = Date.now() - birthDate.getTime();
+        const ageDate = new Date(ageDiffMs);
+        const calculatedAge = Math.abs(ageDate.getUTCFullYear() - 1970);
+
+        const genderInput = form.querySelector("input[name='gender']:checked");
+        const genderValue = genderInput ? genderInput.value : "";
+
+        const subjectSelect = form.querySelector("#subject");
+        const selectedSubject = subjectSelect.options[subjectSelect.selectedIndex].text;
+
+        const newTeacher = {
+            id: users.length ? Math.max(...users.map(u => u.id)) + 1 : 1,
+            full_name: fullName,
+            name: {
+                first: firstName,
+                last: lastName
+            },
+            gender: genderValue,
+            course: selectedSubject,
+            age: calculatedAge,
+            dob: {
+                age: calculatedAge,
+                date: dobValue
+            },
+            email: form.querySelector("#email").value,
+            phone: form.querySelector("#phone").value,
+            city: form.querySelector("#city").value,
+            country: form.querySelector("#region").value,
+            location: {
+                city: form.querySelector("#city").value,
+                country: form.querySelector("#region").value
+            },
+            picture: {
+                medium: "https://via.placeholder.com/150", 
+                large: "https://via.placeholder.com/300"
+            },
+            note: form.querySelector("#bio").value || "No notes available",
+            favourite: false
+        };
+
+        users.unshift(newTeacher);
+
+        renderTeacher(users);
+        renderTable(users);
+
+        form.reset();
+        popup.style.display = "none";
+    });
+}
+
+
+function renderTable(users = []) {
+   
+    const tbody = document.querySelector("#statistics-table tbody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    for (let i = 0; i < users.length; i++) {
+        let user = users[i];
+
+        let fullName = user.name ? `${user.name.first} ${user.name.last}` : user.full_name;
+        let speciality = user.course || "N/A";
+        let age = user.dob ? user.dob.age : user.age;
+        let gender = user.gender || "N/A";
+        let country = user.location ? user.location.country : user.country;
+
+        let tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${fullName}</td>
+            <td>${speciality}</td>
+            <td>${age}</td>
+            <td>${gender}</td>
+            <td>${country}</td>
+        `;
+        tbody.appendChild(tr);
+    }
+}
+
+let currentSortField = null;
+let sortOrder = 'asc'; 
+
+function initTableSorting() {
+    const headers = document.querySelectorAll("#statistics-table th[data-sort]");
+    
+    headers.forEach(th => {
+        th.style.cursor = "pointer"; 
+        
+        th.addEventListener("click", function() {
+            const field = this.getAttribute("data-sort");
+            if (currentSortField === field) {
+                sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortField = field;
+                sortOrder = 'asc';
+            }
+           
+            let sortKey = field;
+            if (field === 'full_name') sortKey = 'full_name'; 
+            if (field === 'course') sortKey = 'course';
+            if (field === 'age') sortKey = 'age';
+            if (field === 'country') sortKey = 'country';
+
+            
+            let sortedUsers = sortUsers(users, sortKey, sortOrder);
+            
+            renderTable(sortedUsers);
+        });
+    });
+}
+
+renderTeacher(users);
+renderTable(users);
+initTableSorting();
+showPopup(users);
+addTeacher();
+filterByAge();
+filterByPhoto();
+countryFilter();
+filterBySex();
+searchTeacher();
 addToFavorites();
+
+
+
 
 
 
