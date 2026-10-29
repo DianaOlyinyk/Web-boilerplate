@@ -207,32 +207,41 @@ function getMatchingPercentage(users, predicate) {
 */
 
 function renderTeacher(users = []) {
-    
     let teachers = document.querySelector("#teachers");
+    if (!teachers) return;
     teachers.innerHTML = "";
+
     for (let i = 0; i < users.length; i++) {
+        let user = users[i];
+
         let article = document.createElement("article");
         article.classList.add("teacher");
+
+        let starSpan = document.createElement("span");
+        starSpan.classList.add("teacher-star");
+        starSpan.textContent = user.favourite ? "★" : "";
+
         let div = document.createElement("div");
         div.id = "photo";
         let img = document.createElement("img");
-        img.src = users[i].picture.medium
-        
-        let h3 = document.createElement("h3");
-        
-        h3.innerHTML = users[i].name.first + "<br>" + users[i].name.last;
-        let p = document.createElement("p");
-        p.textContent = users[i].course;
-        
-        let small = document.createElement("small");
-        small.textContent = users[i].location.country;
-        
+        img.src = user.picture.medium;
         div.appendChild(img);
-       
+
+        let h3 = document.createElement("h3");
+        h3.innerHTML = user.name.first + "<br>" + user.name.last;
+
+        let p = document.createElement("p");
+        p.textContent = user.course;
+
+        let small = document.createElement("small");
+        small.textContent = user.location.country;
+
+        article.appendChild(starSpan); 
         article.appendChild(div);
         article.appendChild(h3);
         article.appendChild(p);
         article.appendChild(small);
+
         teachers.appendChild(article);
     }
 }
@@ -284,7 +293,6 @@ function showPopup(users=[]) {
 function addToFavorites() {
     let star = document.querySelector("#teacher-info .favorite-star");
     star.addEventListener("click", function() {
-        console.log("Current Teacher ID:", currentTeacherId);
         star.textContent = star.textContent === "☆" ? "★" : "☆";
        
             if (!favoriteTeachers.includes(currentTeacherId)) {
@@ -296,8 +304,8 @@ function addToFavorites() {
                 users.find(user => user.id === currentTeacherId).favourite = false;
             }
             renderFavorites();
+            AllFilter()
     });
-    console.log("Favorite Teachers:", favoriteTeachers);
     renderFavorites();
 }
 
@@ -328,6 +336,7 @@ function renderFavorites() {
         teachers.appendChild(teacherCard);
     }
 }
+
 let age = "Any";
 function filterByAge(){
     let selectAge = document.querySelector("#age")
@@ -353,6 +362,7 @@ function filterByAge(){
 
     });
 }
+
 let country = "Any"
 function countryFilter() {
     let selectCountry = document.querySelector("#region");
@@ -391,7 +401,7 @@ function filterBySex() {
     });
 }
 
-let photo = true
+let photo = false
 function filterByPhoto() {
     let photoCheckboxOption = document.querySelector("#with_photo");
     if (!photoCheckboxOption) return;
@@ -414,53 +424,61 @@ function filterByPhoto() {
     });
 }
 
+let favourite = false;
+function filterFavourites(){
+    let favouritesOnlyOption = document.querySelector("#favorites_only");
+    if(!favouritesOnlyOption) return;
+    favouritesOnlyOption.addEventListener("change", function(){
+        favourite = favouritesOnlyOption.checked;
+        AllFilter();
+    });
+
+}
+
 function AllFilter()
 {
-       let filteredUsers = users.filter(user => {
-          
+        let filteredUsers = users.filter(user => {
+        
+        if (photo) {
             const medium = user.picture ? user.picture.medium : "";
             const large = user.picture ? user.picture.large : "";
-            let hasRealPhoto = medium !== "https://via.placeholder.com/150" 
-                && large !== "https://via.placeholder.com/300";
+            let hasRealPhoto = medium !== "https://via.placeholder.com/150" && large !== "https://via.placeholder.com/300";
+            if (!hasRealPhoto) return false;
+        }
 
-             return !photo || hasRealPhoto ;
-        });
-        console.log("photo");
-        console.log("Photos " + filteredUsers);
-        filteredUsers = filteredUsers.filter(user => {
-            if(sex.toLowerCase() === "any") {return true;}
-            else return user.gender.toLowerCase() === sex.toLowerCase();
-        });
-        console.log("gender");
-         console.log("Gender"+filteredUsers);
-        filteredUsers = filteredUsers.filter(user => {
+        if (sex.toLowerCase() !== "any") {
+            if (!user.gender || user.gender.toLowerCase() !== sex.toLowerCase()) {
+                return false;
+            }
+        }
+
+        if (age !== "" && age !== "Any") {
+            let userAge = user.dob ? user.dob.age : user.age;
             if (age.includes("-")) {
-                let ageRange = age.split("-");
-                return user.dob.age >= parseInt(ageRange[0]) && user.dob.age <= parseInt(ageRange[1]);
+                let ageRange = age.split("-").map(Number);
+                if (userAge < ageRange[0] || userAge > ageRange[1]) return false;
+            } else if (age === "51+") {
+                if (userAge < 51) return false;
             }
-            else if (age === "51+") {
-                return user.dob.age >= 51;
-            }
-            else {
-                return true;
-            }
-        });
-        console.log("Age")
-        console.log(filteredUsers);
+        }
 
-        filteredUsers = filteredUsers.filter(user => {
-            if(country.toLowerCase()==="any"){
-                return true;
+        if (country.toLowerCase() !== "any") {
+            let userCountry = user.location ? user.location.country : user.country;
+            if (!userCountry || userCountry.toLowerCase() !== country) {
+                return false;
             }
-            else return user.location.country.toLowerCase() === country;
-        });
+        }
 
-         console.log("Country")
-        console.log(filteredUsers);
-        
-        renderTeacher(filteredUsers);
-        renderTable(filteredUsers);
-        showPopup(filteredUsers);
+        if (favourite && !user.favourite) {
+            return false;
+        }
+
+        return true;
+    });
+   
+    renderTeacher(filteredUsers);
+    renderTable(filteredUsers);
+    showPopup(filteredUsers);
 }
 
 
@@ -475,17 +493,20 @@ function searchTeacher(){
             user.dob.age === parseInt(input.value);
         });
         renderTeacher(filteredUsers);
+        showPopup(filteredUsers);
     });
 }
 
 function addTeacher() {
-    let addButton = document.querySelector("#add-button");
+    let addButtons = document.querySelectorAll(".add-button");
     let popup = document.querySelector("#add-teacher-popup");
     let form = popup.querySelector("form");
     let closeButton = document.querySelector("#close");
 
-    addButton.addEventListener("click", function () {
-        popup.style.display = "flex";
+    addButtons.forEach(button =>{
+        button.addEventListener("click", function () {
+            popup.style.display = "flex";
+        });
     });
 
     closeButton.addEventListener("click", function () {
@@ -613,6 +634,30 @@ function initTableSorting() {
     });
 }
 
+function initFavoritesCarousel() {
+    const leftArrow = document.querySelector("#arrow-left");
+    const rightArrow = document.querySelector("#arrow-right");
+    const teachersList = document.querySelector("#teachers-list");
+
+    if (!leftArrow || !rightArrow || !teachersList) return;
+
+    const scrollAmount = 220; 
+
+    leftArrow.addEventListener("click", () => {
+        teachersList.scrollBy({
+            left: -scrollAmount,
+            behavior: "smooth"
+        });
+    });
+
+    rightArrow.addEventListener("click", () => {
+        teachersList.scrollBy({
+            left: scrollAmount,
+            behavior: "smooth"
+        });
+    });
+}
+
 renderTeacher(users);
 renderTable(users);
 initTableSorting();
@@ -622,8 +667,10 @@ filterByAge();
 filterByPhoto();
 countryFilter();
 filterBySex();
+filterFavourites();
 searchTeacher();
 addToFavorites();
+initFavoritesCarousel();
 
 
 
