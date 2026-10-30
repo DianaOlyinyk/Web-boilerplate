@@ -674,5 +674,17 @@ initFavoritesCarousel();
 
 
 
+/*
+    Web Requests
+ */
 
+async function fetchUsers() {
+    try {
+        let response = await fetch("https://randomuser.me/api/?results=50");
+        let data = await response.json();
+        return data.results;
+    } catch (error) {
+        console.error("Помилка при завантаженні даних:", error);
+    }
+}
 
