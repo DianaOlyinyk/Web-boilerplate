@@ -375,21 +375,7 @@ function filterByAge(){
 
         age = selectAge.value;
         AllFilter();
-        /*let filteredUsers = users.filter(user => {
-            if (selectAge.value.includes("-")) {
-                let ageRange = selectAge.value.split("-");
-                return user.dob.age >= parseInt(ageRange[0]) && user.dob.age <= parseInt(ageRange[1]);
-            }
-            else if (selectAge.value === "51+") {
-                return user.dob.age >= 51;
-            }
-            else {
-                return true;
-            }
-        });
-        */
-
-
+       
     });
 }
 
@@ -409,10 +395,7 @@ function countryFilter() {
     selectCountry.addEventListener("change", function() {
         country = selectCountry.value.toLowerCase()
         AllFilter();
-       /* let filteredUsers = users.filter(user => {
-            return user.location.country.toLowerCase() === selectCountry.value.toLowerCase();
-        });
-        renderTeacher(filteredUsers);*/
+      
     });
 }
 
@@ -423,11 +406,7 @@ function filterBySex() {
     selectSex.addEventListener("change", function() {
         sex = selectSex.value.toLowerCase();
         AllFilter();
-       /* let filteredUsers = users.filter(user => {
-            if(selectSex.value === "Any") {return true;}
-            else return user.gender.toLowerCase() === selectSex.value.toLowerCase();
-        });
-        renderTeacher(filteredUsers);*/
+     
     });
 }
 
@@ -439,17 +418,7 @@ function filterByPhoto() {
     photoCheckboxOption.addEventListener("change", function() {
         photo = photoCheckboxOption.checked;
         AllFilter();
-       /* let filteredUsers = users.filter(user => {
-          
-            const medium = user.picture ? user.picture.medium : "";
-            const large = user.picture ? user.picture.large : "";
-            let hasRealPhoto = medium !== "https://via.placeholder.com/150" 
-                && large !== "https://via.placeholder.com/300";
-
-            return !photoCheckboxOption.checked || hasRealPhoto;
-        });
-
-        renderTeacher(filteredUsers);*/
+      
        
     });
 }
