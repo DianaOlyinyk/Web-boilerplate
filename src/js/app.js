@@ -485,10 +485,11 @@ function AllFilter()
 function searchTeacher(){
     let searchButton = document.querySelector("#search-button");
     let input = document.querySelector("#search-input");
+    console.log(users);
     searchButton.addEventListener("click", function(){
         let filteredUsers = users.filter(user => {
             return user.name.first.toLowerCase().includes(input.value.toLowerCase()) || 
-            user.note.toLowerCase().includes(input.value.toLowerCase()) ||
+            user.note?.toLowerCase().includes(input.value.toLowerCase()) ||
             user.dob.age === parseInt(input.value);
         });
         renderTeacher(filteredUsers);
@@ -563,7 +564,7 @@ function addTeacher() {
         };
 
         users.unshift(newTeacher);
-
+        submitForm(newTeacher);
         renderTeacher(users);
         renderTable(users);
 
@@ -657,20 +658,7 @@ function initFavoritesCarousel() {
     });
 }
 
-renderTeacher(users);
-renderTable(users);
-initTableSorting();
-showPopup(users);
-addTeacher();
-filterByAge();
-filterByPhoto();
-countryFilter();
-filterBySex();
-filterFavourites();
-searchTeacher();
-addToFavorites();
-initFavoritesCarousel();
-
+fetchUsers();
 
 
 
@@ -682,9 +670,61 @@ async function fetchUsers() {
     try {
         let response = await fetch("https://randomuser.me/api/?results=50");
         let data = await response.json();
+        users = data.results;
+        //console.log(data.results);
+        renderTeacher(users);
+        renderTable(users);
+        showPopup(users);
+        initTableSorting();
+        addTeacher();
+        filterByAge();
+        filterByPhoto();
+        countryFilter();
+        filterBySex();
+        filterFavourites();
+        searchTeacher();
+        addToFavorites();
+        initFavoritesCarousel();
+        pagination(users);
         return data.results;
     } catch (error) {
         console.error("Помилка при завантаженні даних:", error);
     }
 }
 
+function pagination(users=[]){
+    let res = users.slice(0,11)
+    renderTable(res);
+    let pagination = document.querySelector(".pagination");
+    let pageNum = users.length/10;
+    for(let i=1; i<= pageNum - 1; i++){
+        let span = document.createElement("span");
+        span.classList.add("page-number");
+        span.addEventListener("click", function(){
+            res = users.slice(10*(i), 10*(i+1));
+            renderTable(res);
+        });
+        span.innerText = `${i}`;
+        pagination.appendChild(span);
+    }
+
+}
+
+async function submitForm(newTeacher) {
+    try {
+        let response = await fetch("http://localhost:3000/teachers", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(newTeacher)
+        });
+        
+        let result = await response.json();
+        console.log("Успішно збережено на json-server:", result);
+    } catch (error) {
+        console.error("Помилка при відправці на сервер:", error);
+    }
+}
+
+ 
