@@ -479,7 +479,6 @@ header #navigation {
   outline: none;
 }
 
-/* Фото вчителя */
 #teacher-card .photo {
   grid-column: 1;
   width: 100%;

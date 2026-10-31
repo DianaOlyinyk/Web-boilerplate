@@ -15,7 +15,8 @@
    </head>
 
    <body itemscope itemtype="http://schema.org/WebPage">
-      <script type="text/javascript" src="./js/app.js"></script>
+      <script type="module" src="./js/app.js"></script>
+      <script type="text/javascript" src="./js/test-module.js"></script>
       <div id="page">
         <header>
             <h1 id="title">Teachinder</h1>
@@ -68,54 +69,7 @@
                     </label>
                 </div>
                 <div id="teachers">
-                    <article class="teacher">
-                        <div id="photo"><img src="images\photos\46.jpg" alt="Teacher 1"></div>
-                        <h3>Ihor <br>Tkachuk</h3>
-                        <p>Chemistry</p>
-                        <small>Ukraine</small>
-                    </article>
-                    <article class="teacher">
-                        <div id="photo"><img src="images\photos\50.jpg" alt="Teacher 1"></div>
-                        <h3>Prag <br>Rameshbabu</h3>
-                        <p>Chess</p>
-                        <small>India</small>
-                    </article>
-                    <article class="teacher">
-                        <div id="photo"><img src="images\photos\10.jpg" alt="Teacher 1"></div>
-                        <h3>Floor <br>Jansen</h3>
-                        <p>Vocal</p>
-                        <small>Denmark</small>
-                    </article>
-                    <article class="teacher">
-                        <div id="photo"><img src="images\photos\60.jpg" alt="Teacher 1"></div>
-                        <h3>Ari <br>Tang</h3>
-                        <p>Biology</p>
-                        <small>China</small>
-                    </article>
-                    <article class="teacher">
-                        <div id="photo"><img src="images\photos\62.jpg" alt="Teacher 1"></div>
-                        <h3>John <br>Burke</h3>
-                        <p>Computer Science</p>
-                        <small>Belgium</small>
-                    </article>
-                    <article class="teacher">
-                        <div id="photo"><img src="images\photos\53.jpg" alt="Teacher 1"></div>
-                        <h3>Rachel <br>Andrew</h3>
-                        <p>Medicine</p>
-                        <small>UK</small>
-                    </article>
-                    <article class="teacher">
-                        <div id="photo"><img src="images\photos\23.jpg" alt="Teacher 1"></div>
-                        <h3>Anna <br>Muzichyk</h3>
-                        <p>Chess</p>
-                        <small>Belarus</small>
-                    </article>
-                    <article class="teacher">
-                        <div id="photo"><img src="images\photos\75.jpg" alt="Teacher 1"></div>
-                        <h3>Radoslaw <br>Ljuboevic</h3>
-                        <p>Physics</p>
-                        <small>Poland</small>
-                    </article>
+                    
                 </div>
             </section>
             <section id="statistics">
@@ -220,35 +174,7 @@
                             </div>
                             <h3>Ihor <br>Tkachuk</h3>
                             <small>Ukraine</small>
-                        </div>
-                        <div id="teacher_card">
-                            <div id="photo">
-                                <img src="images\photos\23.jpg" alt="Teacher 1">
-                            </div>
-                            <h3>Anna <br>Makarevich</h3>
-                            <small>Belarus</small>
-                        </div>
-                        <div id="teacher_card">
-                            <div id="photo">
-                                <img src="images\photos\62.jpg" alt="Teacher 1">
-                            </div>
-                            <h3>John <br>Burke</h3>
-                            <small>Belgium</small>
-                        </div>
-                        <div id="teacher_card">
-                            <div id="photo">
-                                <img src="images\photos\60.jpg" alt="Teacher 1">
-                            </div>
-                            <h3>Ari <br>Tang</h3>
-                            <small>China</small>
-                        </div>
-                        <div id="teacher_card">
-                            <div id="photo">
-                                <img src="images\photos\10.jpg" alt="Teacher 1">
-                            </div>
-                            <h3>Floor <br>Jansen</h3>
-                            <small>Denmark</small>
-                        </div>
+                        </div>                      
                     </div>
                     <div id="arrow-right" class="arrow">&#10095;</div>
                 </div>
@@ -275,10 +201,10 @@
         </div>
         <div id="form">
             <form>
-                <label id="name">Name:
+                <label for="name">Name:
                     <input type="text" id="name" name="name" required>
                 </label>
-                <label id="subject">Subject:
+                <label for="subject">Subject:
                     <select id="subject" name="subject" required>
                         <option value="">Select a subject</option>
                         <option value="math">Math</option>
@@ -293,7 +219,7 @@
                         <option value="Statistics">Statistics</option>
                     </select>
                 </label>
-                <label id="region">Region:
+                <label for="region">Region:
                     <select id="region" name="region" required>
                         <option value="">Select a region</option>
                         <option value="america">America</option>
@@ -302,16 +228,16 @@
                         <option value="africa">Africa</option>
                     </select>
                 </label>
-                <label id="city">City:
+                <label for="city">City:
                     <input type="text" id="city" name="city" required>
                 </label>
-                <label id="email">Email:
+                <label for="email">Email:
                     <input type="email" id="email" name="email" required>
                 </label>
-                <label id="phone">Phone:
+                <label for="phone">Phone:
                     <input type="tel" id="phone" name="phone" required>
                 </label>    
-                <label id="date_of_birth">Date of Birth:
+                <label for="date_of_birth">Date of Birth:
                     <input type="date" id="date_of_birth" name="date_of_birth" required>
                 </label>
                 <fieldset id="gender">
@@ -325,7 +251,7 @@
                         Female
                     </label>
                 </fieldset>
-                <label id="color">Background Color:
+                <label for="color">Background Color:
                     <!--Logic in CSS-->
                 </label>
                 <textarea id="bio" name="bio" placeholder="Write a short bio about yourself..." required></textarea>
@@ -338,10 +264,10 @@
     <div id="teacher-info">
         <article id="teacher-card">
             <div class="photo">
-                <img src="photos\46.jpg" alt="Teacher 1">
+                <img src="images\photos\46.jpg" alt="Teacher 1">
             </div>
             <h2 class="teacher-name">Ihor Tkachuk</h2>
-            <span class="favorite-star">&#9734;</span>
+            <span class="favorite-star">☆</span>
             <h3 class="teacher-subject">Chemistry</h3>
             <p class="teacher-location">Kyiv, Ukraine</p>
             <p class="teacher-age">35, Male</p>
