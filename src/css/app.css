@@ -93,7 +93,7 @@ header #navigation {
   text-decoration: underline;
 }
 
-#add-button {
+.add-button {
   margin-left: auto;
   padding: 8px 16px;
   background-color: #ffffff;
@@ -105,7 +105,7 @@ header #navigation {
   transition: all 0.2s;
 }
 
-#add-button:hover {
+.add-button:hover {
   background-color: #f26666;
   color: #ffffff;
 }
@@ -237,14 +237,43 @@ header #navigation {
 
 .pagination {
   display: flex;
+  align-items: center;
   gap: 10px;
   font-size: 13px;
   color: #f26666;
   margin-bottom: 40px;
 }
 
-.page-number {
+.pagination button {
+  border: 1px solid #f26666;
+  border-radius: 4px;
+  padding: 8px 14px;
+  background-color: #f26666;
+  color: #fff;
+  font: inherit;
   cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  border-color: #a91d1d;
+  background-color: #a91d1d;
+}
+
+.pagination button:focus-visible {
+  outline: 2px solid #8e1717;
+  outline-offset: 2px;
+}
+
+.pagination button:disabled {
+  border-color: #d9a0a0;
+  background-color: #d9a0a0;
+  cursor: not-allowed;
+}
+
+.page-number {
+  min-width: 44px;
+  text-align: center;
 }
 
 .favourite-teachers {
@@ -555,6 +584,28 @@ header #navigation {
   color: #f5c518; 
   transform: scale(1.2); 
 }
+
+.teacher {
+    position: relative; 
+}
+
+.teacher-star {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    color: gold; 
+    cursor: pointer;
+    user-select: none;
+}
+
+
+
+.pagination .page-number:hover{
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 
 
 @media (max-width: 767px) {

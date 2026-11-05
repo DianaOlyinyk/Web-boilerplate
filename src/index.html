@@ -30,13 +30,13 @@
                 <a href=#favourites>Favourite</a>
                 <a href=#about>About</a>
             </nav>
-            <button id="add-button">Add Teacher</button>
+            <button class="add-button">Add Teacher</button>
         </header>
         <main>   
             <section id="filters">
                 <h2>Top Teachers</h2>
                 <div class="filter">
-                    <label id="age">Age:
+                    <label id="ageLabel">Age:
                         <select id="age" name="age">
                             <option value="">Any</option>
                             <option value="18-31">18-31</option>
@@ -45,26 +45,22 @@
                             <option value="51+">51+</option>
                         </select>
                     </label>
-                    <label id="region">Region:
-                        <select id="region" name="region">
-                            <option value="">Any</option>
-                            <option value="europe">Europe</option>
-                            <option value="asia">Asia</option>
-                            <option value="america">America</option>
-                            <option value="africa">Africa</option>
+                    <label id="regionLabel">Region:
+                        <select id="regionFilter" name="region">
+                            
                         </select>
                     </label>
-                    <label id="sex">Sex:
+                    <label id="sexLabel">Sex:
                         <select id="sex" name="sex">
-                            <option value="">Any</option>
+                            <option value="Any">Any</option>
                             <option value="male">Male</option>
                             <option value="female">Female</option>
                         </select>
                     </label>
-                    <label id="with_photo">Only with photo:
+                    <label id="with_photoLabel">Only with photo:
                         <input type="checkbox" id="with_photo" name="with_photo">       
                     </label>
-                    <label id="favorites_only">Only with followers:
+                    <label id="favorites_onlyLabel">Only with followers:
                         <input type="checkbox" id="favorites_only" name="favorites_only">
                     </label>
                 </div>
@@ -77,11 +73,11 @@
                 <table id="statistics-table">
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Speciality</th>
-                            <th>Age</th>
-                            <th>Gender</th>
-                            <th>Nationality</th>
+                            <th data-sort="full_name">Name</th>
+                            <th data-sort="course">Speciality</th>
+                            <th data-sort="age">Age</th>
+                            <th data-sort="gender">Gender</th>
+                            <th data-sort="country">Nationality</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -92,76 +88,12 @@
                             <td>Female</td>
                             <td>Vietnam</td>
                         </tr>
-                        <tr>
-                            <td>Julia Bradley</td>
-                            <td>Math</td>
-                            <td>26</td>
-                            <td>Female</td>
-                            <td>USA</td>
-                        </tr>
-                        <tr>
-                            <td>Rita Hart</td>
-                            <td>Art</td>
-                            <td>41</td>
-                            <td>Female</td>
-                            <td>Ireland</td>
-                        </tr>
-                        <tr>
-                            <td>Jonathan Jacobs</td>
-                            <td>Math</td>
-                            <td>32</td>
-                            <td>Male</td>
-                            <td>England</td>
-                        </tr>
-                        <tr>
-                            <td>Nathaniel White</td>
-                            <td>Computer Science</td>
-                            <td>37</td>
-                            <td>Male</td>
-                            <td>Austria</td>
-                        </tr>
-                        <tr>
-                            <td>Frank Medina</td>
-                            <td>English</td>
-                            <td>43</td>
-                            <td>Male</td>
-                            <td>Italy</td>
-                        </tr>
-                        <tr>
-                            <td>Ella Curtis</td>
-                            <td>Chess</td>
-                            <td>34</td>
-                            <td>Female</td>
-                            <td>USA</td>
-                        </tr>
-                        <tr>
-                            <td>Claire Simmons</td>
-                            <td>Art</td>
-                            <td>38</td>
-                            <td>Female</td>
-                            <td>Netherlands</td>
-                        </tr>
-                        <tr>
-                            <td>Benjamin Knight</td>
-                            <td>Biology</td>
-                            <td>44</td>
-                            <td>Male</td>
-                            <td>Scotland</td>
-                        </tr>
-                        <tr>
-                            <td>Norma Rose</td>
-                            <td>Statistics</td>
-                            <td>36</td>
-                            <td>Female</td>
-                            <td>France</td>
-                        </tr>
                     </tbody>
                 </table>
                 <div class="pagination">
-                    <span class="page-number">1</span>
-                    <span class="page-number">2</span>
-                    <span class="page-number">3</span>
-                    <span class="page-number">Last</span>
+                    <!--<span class="page-number"></span>-->
+                   
+                </div>
             </section>
             <section id="favourites">
                 <h2>Favourites</h2>
@@ -190,7 +122,7 @@
                 <a href=#favourites>Favourite</a>
                 <a href=#about>About</a>
             </nav>
-            <button id="add-button">Add Teacher</button>
+            <button class="add-button">Add Teacher</button>
         </footer>
     </div>
     <!---Static Pop-up-->
@@ -207,25 +139,39 @@
                 <label for="subject">Subject:
                     <select id="subject" name="subject" required>
                         <option value="">Select a subject</option>
-                        <option value="math">Math</option>
+                        <option value="math">Mathematics</option>
                         <option value="science">Computer Science</option>
                         <option value="art">Art</option>
                         <option value="chemistry">Chemistry</option>
-                        <option value="history">History</option>
+                        <option value="dancing">Dancing</option>
                         <option value="english">English</option>
                         <option value="physics">Physics</option>
                         <option value="biology">Biology</option>
                         <option value="chess">Chess</option>
+                        <option value="law">Law</option>
+                        <option value="medicine">Medicine</option>
                         <option value="Statistics">Statistics</option>
                     </select>
                 </label>
                 <label for="region">Region:
                     <select id="region" name="region" required>
                         <option value="">Select a region</option>
-                        <option value="america">America</option>
-                        <option value="asia">Asia</option>
-                        <option value="europe">Europe</option>
-                        <option value="africa">Africa</option>
+                        <option value="Germany">Germany</option>
+                        <option value="Ireland">Ireland</option>
+                        <option value="Australia">Australia</option>
+                        <option value="United States">United States</option>
+                        <option value="Finland">Finland</option>
+                        <option value="Turkey">Turkey</option>
+                        <option value="Switzerland">Switzerland</option>
+                        <option value="New Zealand">New Zealand</option>
+                        <option value="Spain">Spain</option>
+                        <option value="Norway">Norway</option>
+                        <option value="Denmark">Denmark</option>
+                        <option value="Iran">Iran</option>
+                        <option value="Canada">Canada</option>
+                        <option value="France">France</option>
+                        <option value="Netherlands">Netherlands</option>
+                        <option value="Ukraine">Ukraine</option>
                     </select>
                 </label>
                 <label for="city">City:
