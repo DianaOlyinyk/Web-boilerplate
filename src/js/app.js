@@ -1,21 +1,35 @@
+//import { response } from 'express';
 import randomUserMock from './test-module.js';
 import additionalUsers from './test-module.js';
+//import { Chart } from 'chart.js/auto';
+
+
 /** ******** Your code here! *********** */
 
 let subjects = ["Mathematics", "Physics", "English", "Computer Science", "Dancing", "Chess", "Biology", "Chemistry", "Law", "Art", "Medicine", "Statistics"];
 let users = formatUsers(randomUserMock);
 let currentTeacherId = -1;
 let favoriteTeachers = [];
+let randomUserSeed = "teachinder-lab4";
 
 function formatUsers(users) {
-    for (let i = 0; i < users.length; i++) {
+   /* for (let i = 0; i < users.length; i++) {
         users[i].id = i + 1;
         users[i].course = subjects[Math.floor(Math.random() * subjects.length)];
         users[i].favourite = false;
         users[i].bg_color = "#" + Math.floor(Math.random() * 16777215).toString(16);
         users[i].note = users[i].note || "No notes available";
-    }
-      return users; 
+    }*/
+
+    
+      return _.map(users, (user, index) => ({
+        ...user,
+        id: index + 1,
+        course: subjects[_.random(0, subjects.length - 1)],
+        favourite: false,
+        bg_color: "#" + _.random(0, 16777215).toString(16).padStart(6, '0'),
+        note: user.note || "No notes available"
+    })); 
 }
 
 function deleteDuplicates(randomUsers, additionalUsers) {
@@ -267,6 +281,44 @@ function renderTeacher(users = []) {
 
 
 
+function updateBirthdayCountdown(teacher) {
+    const countdown = document.querySelector(".teacher-birthday-countdown");
+    if (!countdown) return;
+
+    const dateValue = teacher && teacher.dob && teacher.dob.date;
+    if (!dateValue || !window.dayjs) {
+        countdown.textContent = "Birthday date is unavailable.";
+        return;
+    }
+
+    const birthDate = window.dayjs(String(dateValue).slice(0, 10));
+    if (!birthDate.isValid()) {
+        countdown.textContent = "Birthday date is unavailable.";
+        return;
+    }
+
+    const today = window.dayjs().startOf("day");
+    const month = birthDate.month();
+    const day = birthDate.date();
+    const isLeapYear = year => (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+    const birthdayInYear = year => {
+        if (month === 1 && day === 29 && !isLeapYear(year)) {
+            return window.dayjs(new Date(year, 1, 28)).startOf("day");
+        }
+        return window.dayjs(new Date(year, month, day)).startOf("day");
+    };
+
+    let nextBirthday = birthdayInYear(today.year());
+    if (nextBirthday.isBefore(today, "day")) {
+        nextBirthday = birthdayInYear(today.year() + 1);
+    }
+
+    const daysRemaining = nextBirthday.diff(today, "day");
+    countdown.textContent = daysRemaining === 0
+        ? "Birthday is today!"
+        : `Next birthday in ${daysRemaining} ${daysRemaining === 1 ? "day" : "days"}.`;
+}
+
 function showPopup(users=[]) {
     let popup = document.querySelector("#teacher-info");
     let teachers = document.querySelector("#teachers");
@@ -301,14 +353,74 @@ function showPopup(users=[]) {
 
         popup.querySelector(".teacher-age").textContent =
             (teacher.dob ? teacher.dob.age : teacher.age) + ", " + teacher.gender;
+        updateBirthdayCountdown(teacher);
 
         popup.querySelector(".teacher-phone").textContent = teacher.phone;
         popup.querySelector(".teacher-email").textContent = teacher.email;
         popup.querySelector(".favorite-star").textContent =
             teacher.favourite ? "★" : "☆";
+            MoveToMarker(teacher);  
     });
 }
+let map;
+const teacherMarkers = new WeakMap();
 
+function getTeacherCoordinates(user) {
+    const coordinates = user && user.location && user.location.coordinates;
+    if (!coordinates) return null;
+
+    const latitude = Number.parseFloat(coordinates.latitude);
+    const longitude = Number.parseFloat(coordinates.longitude);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)
+        || latitude < -90 || latitude > 90
+        || longitude < -180 || longitude > 180) {
+        return null;
+    }
+
+    return [latitude, longitude];
+}
+
+function addTeacherMarker(user) {
+    const coordinates = getTeacherCoordinates(user);
+    if (!map || !coordinates || !user || typeof user !== "object") return null;
+
+    let marker = teacherMarkers.get(user);
+    if (marker) return marker;
+
+    const popup = document.createElement("div");
+    const name = document.createElement("strong");
+    const location = document.createElement("div");
+    const fullName = user.name
+        ? `${user.name.first || ""} ${user.name.last || ""}`.trim()
+        : (user.full_name || "Teacher");
+    const city = user.location && user.location.city ? user.location.city : user.city;
+    const countryName = user.location && user.location.country ? user.location.country : user.country;
+
+    name.textContent = fullName || "Teacher";
+    location.textContent = [city, countryName].filter(Boolean).join(", ");
+    popup.append(name, location);
+
+    marker = L.marker(coordinates).addTo(map).bindPopup(popup);
+    teacherMarkers.set(user, marker);
+    return marker;
+}
+
+function MoveToMarker(user) {
+    if (!user || !getTeacherCoordinates(user)) return;
+    if (!map) initMap([user]);
+    if (!map) return;
+
+    const marker = addTeacherMarker(user);
+    if (!marker) return;
+
+    const coordinates = getTeacherCoordinates(user);
+    requestAnimationFrame(() => {
+        if (!map) return;
+        map.invalidateSize({ pan: false });
+        map.setView(coordinates, 13);
+        marker.openPopup();
+    });
+}
 function addToFavorites() {
     let star = document.querySelector("#teacher-info .favorite-star");
     star.addEventListener("click", function() {
@@ -361,6 +473,7 @@ function renderFavorites() {
 
             currentTeacherId = teacher.id;
             popup.style.display = "flex";
+            MoveToMarker(teacher);
 
             popup.querySelector(".photo img").src = teacher.picture.large;
             popup.querySelector(".teacher-name").textContent = 
@@ -372,6 +485,7 @@ function renderFavorites() {
 
             popup.querySelector(".teacher-age").textContent = 
                 (teacher.dob ? teacher.dob.age : teacher.age) + ", " + teacher.gender;
+            updateBirthdayCountdown(teacher);
 
             popup.querySelector(".teacher-phone").textContent = teacher.phone;
             popup.querySelector(".teacher-email").textContent = teacher.email;
@@ -505,7 +619,7 @@ function AllFilter()
 function searchTeacher(){
     let searchButton = document.querySelector("#search-button");
     let input = document.querySelector("#search-input");
-    console.log(users);
+  
     searchButton.addEventListener("click", function(){
         let filteredUsers = users.filter(user => {
             return user.name.first.toLowerCase().includes(input.value.toLowerCase()) || 
@@ -533,7 +647,7 @@ async function addTeacher() {
         popup.style.display = "none";
     });
 
-    form.addEventListener("submit", async function (event) {
+    form.addEventListener("click", async function (event) {
         event.preventDefault(); 
 
         const fullName = form.querySelector("#name").value.trim();
@@ -602,125 +716,80 @@ async function addTeacher() {
         
     });
 }
+let report;
+function countryReport(users) {
+    let reportData = [];
 
-
-const TABLE_PAGE_SIZE = 10;
-const randomUserSeed = "teachinder-lab4";
-let tablePage = 0;
-let nextApiPage = 1;
-let tableRows = [];
-
-function renderTable(users = [], page = 0) {
-   
-    const tbody = document.querySelector("#statistics-table tbody");
-    if (!tbody) return;
-    tableRows = users;
-    tablePage = Math.max(0, Math.min(page, Math.ceil(tableRows.length / TABLE_PAGE_SIZE) - 1));
-    tbody.innerHTML = "";
-
-    const start = tablePage * TABLE_PAGE_SIZE;
-    const visibleUsers = tableRows.slice(start, start + TABLE_PAGE_SIZE);
-
-    for (let i = 0; i < visibleUsers.length; i++) {
-        let user = visibleUsers[i];
-
-        let fullName = user.name ? `${user.name.first} ${user.name.last}` : user.full_name;
-        let speciality = user.course || "N/A";
-        let age = user.dob ? user.dob.age : user.age;
-        let gender = user.gender || "N/A";
-        let country = user.location ? user.location.country : user.country;
-
-        let tr = document.createElement("tr");
-
-        tr.innerHTML = `
-            <td>${fullName}</td>
-            <td>${speciality}</td>
-            <td>${age}</td>
-            <td>${gender}</td>
-            <td>${country}</td>
-        `;
-        tbody.appendChild(tr);
+    for (let user of users) {
+       reportData.push({
+            country: user.location.country,
+            full_name: user.name.first + " " + user.name.last,
+            age: user.age
+        });
+        
     }
+    console.log(reportData);
+   report = new WebDataRocks({
+        container: "#reportContainer",
+        toolbar: true,
+        height: 400,    
+        report: {
+            dataSource: {
+            data: reportData
+        },
+        slice: {
+            rows: [
+                { uniqueName: "country" }
+            ],
+            measures: [
+                { uniqueName: "country", aggregation: "count",caption: "Number of Teachers" },
+               
+            ]
+        }
+    }
+    });
 
-    renderTablePagination();
 }
 
-function renderTablePagination() {
-    const paginationContainer = document.querySelector(".pagination");
-    if (!paginationContainer) return;
-
-    paginationContainer.innerHTML = "";
-    const totalPages = Math.max(1, Math.ceil(tableRows.length / TABLE_PAGE_SIZE));
-
-    const previousButton = document.createElement("button");
-    previousButton.type = "button";
-    previousButton.textContent = "Previous";
-    previousButton.disabled = tablePage === 0;
-    previousButton.addEventListener("click", () => renderTable(tableRows, tablePage - 1));
-
-    const pageLabel = document.createElement("span");
-    pageLabel.classList.add("page-number");
-    pageLabel.textContent = `${tablePage + 1} / ${totalPages}`;
-
-    const nextButton = document.createElement("button");
-    nextButton.type = "button";
-    nextButton.textContent = "Next";
-    nextButton.disabled = false;
-    nextButton.addEventListener("click", async () => {
-        const nextPage = tablePage + 1;
-        if (nextPage * TABLE_PAGE_SIZE >= tableRows.length) {
-            nextButton.disabled = true;
-            try {
-                const response = await fetch(`https://randomuser.me/api/?results=${TABLE_PAGE_SIZE}&seed=${randomUserSeed}&page=${nextApiPage}`);
-                if (!response.ok) throw new Error(`Random User API: ${response.status}`);
-                const data = await response.json();
-                nextApiPage += 1;
-                users = users.concat(data.results);
-                const filteredUsers = AllFilter();
-                renderTable(filteredUsers, nextPage);
-            } catch (error) {
-                nextButton.disabled = false;
-                console.error("Не вдалося завантажити наступну сторінку:", error);
-            }
-        } else {
-            renderTable(tableRows, nextPage);
+function renderChart(users) {
+    let ctx = document.getElementById('ageChart').getContext('2d');
+    let chartData = {};
+    for(let user of users) {
+       let couuntry = user.location.country;
+         if(chartData[couuntry]) {
+            chartData[couuntry]++;
+        }
+        else {
+            chartData[couuntry] = 1;
+        }
+    }
+    let labels = Object.keys(chartData);
+    let data = Object.values(chartData);
+    let chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Number of Teachers',
+                data: data,
+                backgroundColor: ['rgba(255, 99, 132, 0.2)',
+                                  'rgba(54, 162, 235, 0.2)',
+                                  'rgba(255, 206, 86, 0.2)',
+                                  'rgba(75, 192, 192, 0.2)',
+                                  'rgba(153, 102, 255, 0.2)',
+                                  'rgba(255, 159, 64, 0.2)',
+                                    'rgba(255, 99, 132, 0.2)',
+                                  'rgba(54, 162, 235, 0.2)'],
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+           responseive: true
         }
     });
-
-    paginationContainer.append(previousButton, pageLabel, nextButton);
 }
 
-let currentSortField = null;
-let sortOrder = 'asc'; 
-
-function initTableSorting() {
-    const headers = document.querySelectorAll("#statistics-table th[data-sort]");
-    
-    headers.forEach(th => {
-        th.style.cursor = "pointer"; 
-        
-        th.addEventListener("click", function() {
-            const field = this.getAttribute("data-sort");
-            if (currentSortField === field) {
-                sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-            } else {
-                currentSortField = field;
-                sortOrder = 'asc';
-            }
-           
-            let sortKey = field;
-            if (field === 'full_name') sortKey = 'full_name'; 
-            if (field === 'course') sortKey = 'course';
-            if (field === 'age') sortKey = 'age';
-            if (field === 'country') sortKey = 'country';
-
-            
-            let sortedUsers = sortUsers(users, sortKey, sortOrder);
-            
-            renderTable(sortedUsers);
-        });
-    });
-}
 
 function initFavoritesCarousel() {
     const leftArrow = document.querySelector("#arrow-left");
@@ -757,8 +826,8 @@ fetchUsers();
 async function fetchUsers() {
     try {
         const initialPages = await Promise.all(
-            Array.from({ length: 5 }, (_, index) => fetch(
-                `https://randomuser.me/api/?results=${TABLE_PAGE_SIZE}&seed=${randomUserSeed}&page=${index + 1}`
+            Array.from({ length: 5 }, (_) => fetch(
+                `https://randomuser.me/api/?results=50`
             ))
         );
         if (initialPages.some(response => !response.ok)) {
@@ -766,11 +835,11 @@ async function fetchUsers() {
         }
         const initialData = await Promise.all(initialPages.map(response => response.json()));
         users = initialData.flatMap(data => data.results);
-        nextApiPage = 6;
+    
         renderTeacher(users);
-        renderTable(users);
+        renderChart(users);
         showPopup(users);
-        initTableSorting();
+        countryReport(users);
         addTeacher();
         filterByAge();
         filterByPhoto();
@@ -780,6 +849,7 @@ async function fetchUsers() {
         searchTeacher();
         addToFavorites();
         initFavoritesCarousel();
+        initMap(users);
         return users;
     } catch (error) {
         console.error("Помилка при завантаженні даних:", error);
@@ -800,4 +870,21 @@ async function submitForm(newTeacher) {
     return response.json();
 }
 
- 
+/**
+ * JS libraries
+*/
+
+function initMap(users = []) {
+    const mapContainer = document.getElementById("map");
+    if (!mapContainer || typeof L === "undefined") return;
+
+    if (!map) {
+        map = L.map(mapContainer).setView([20, 0], 2);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+    }
+
+    users.forEach(addTeacherMarker);
+}
+
