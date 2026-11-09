@@ -609,7 +609,6 @@ function AllFilter()
     });
    
     renderTeacher(filteredUsers);
-    renderTable(filteredUsers);
     showPopup(filteredUsers);
     return filteredUsers;
 }
@@ -706,7 +705,7 @@ async function addTeacher() {
             const savedTeacher = await submitForm(newTeacher);
             users.unshift(savedTeacher);
             renderTeacher(users);
-            renderTable(users);
+            countryReport(users);
             form.reset();
             popup.style.display = "none";
         } catch (error) {
@@ -717,38 +716,105 @@ async function addTeacher() {
     });
 }
 let report;
-function countryReport(users) {
-    let reportData = [];
+let countryReportMode = "country";
+let countryReportData = [];
 
-    for (let user of users) {
-       reportData.push({
-            country: user.location.country,
-            full_name: user.name.first + " " + user.name.last,
-            age: user.age
-        });
-        
+function normalizeReportUsers(teachers = []) {
+    return teachers.map((teacher, index) => ({
+        "Teacher ID": String(teacher.email || teacher.id || index + 1),
+        "Teacher name": teacher.name
+            ? `${teacher.name.first || ""} ${teacher.name.last || ""}`.trim()
+            : (teacher.full_name || "Unknown"),
+        Country: (teacher.location && teacher.location.country) || teacher.country || "Unknown",
+        City: (teacher.location && teacher.location.city) || teacher.city || "Unknown",
+        Age: String((teacher.dob && teacher.dob.age) || teacher.age || ""),
+        Gender: teacher.gender || "Unknown",
+        Subject: teacher.course || teacher.subject || "Not specified",
+        Email: teacher.email || "",
+        Phone: teacher.phone || "",
+        Birthday: teacher.dob && teacher.dob.date
+            ? String(teacher.dob.date).slice(0, 10)
+            : "",
+        "Teacher count": 1
+    }));
+}
+
+function buildCountryReport(data, mode) {
+    const reportConfig = {
+        dataSource: { data },
+        options: {
+            grid: mode === "flat"
+                ? { type: "flat", showTotals: "off", showGrandTotals: "off" }
+                : { type: "compact" }
+        }
+    };
+
+    if (mode === "flat") {
+        const flatColumns = [
+            "Teacher ID", "Teacher name", "Country", "City", "Age",
+            "Gender", "Subject", "Email", "Phone", "Birthday"
+        ];
+        reportConfig.slice = {
+            rows: flatColumns.map(column => ({ uniqueName: column, caption: column }))
+        };
+    } else {
+        reportConfig.slice = {
+            rows: [{ uniqueName: "Country", caption: "Country" }],
+            columns: [{ uniqueName: "Measures" }],
+            measures: [{
+                uniqueName: "Teacher count",
+                aggregation: "sum",
+                caption: "Number of teachers"
+            }]
+        };
     }
-    console.log(reportData);
-   report = new WebDataRocks({
+
+    return reportConfig;
+}
+
+function setCountryReportMode(mode) {
+    countryReportMode = mode;
+    if (report && countryReportData.length) {
+        report.setReport(buildCountryReport(countryReportData, countryReportMode));
+    }
+
+    document.querySelectorAll("[data-report-mode]").forEach(button => {
+        button.setAttribute("aria-pressed", String(button.dataset.reportMode === mode));
+    });
+}
+
+function initCountryReportControls() {
+    document.querySelectorAll("[data-report-mode]").forEach(button => {
+        button.addEventListener("click", () => setCountryReportMode(button.dataset.reportMode));
+    });
+}
+
+function countryReport(teachers = users) {
+    countryReportData = normalizeReportUsers(teachers);
+
+    const container = document.querySelector("#reportContainer");
+    if (!container) return;
+    if (!countryReportData.length) {
+        container.textContent = "No teacher data is available.";
+        return;
+    }
+    if (!window.WebDataRocks) {
+        container.textContent = "WebDataRocks could not be loaded.";
+        return;
+    }
+
+    const config = buildCountryReport(countryReportData, countryReportMode);
+    if (report) {
+        report.setReport(config);
+        return;
+    }
+
+    report = new window.WebDataRocks({
         container: "#reportContainer",
         toolbar: true,
-        height: 400,    
-        report: {
-            dataSource: {
-            data: reportData
-        },
-        slice: {
-            rows: [
-                { uniqueName: "country" }
-            ],
-            measures: [
-                { uniqueName: "country", aggregation: "count",caption: "Number of Teachers" },
-               
-            ]
-        }
-    }
+        height: 500,
+        report: config
     });
-
 }
 
 function renderChart(users) {
@@ -839,6 +905,7 @@ async function fetchUsers() {
         renderTeacher(users);
         renderChart(users);
         showPopup(users);
+        initCountryReportControls();
         countryReport(users);
         addTeacher();
         filterByAge();
