@@ -1,7 +1,7 @@
-//import { response } from 'express';
+
 import randomUserMock from './test-module.js';
 import additionalUsers from './test-module.js';
-//import { Chart } from 'chart.js/auto';
+
 
 
 /** ******** Your code here! *********** */
@@ -13,23 +13,13 @@ let favoriteTeachers = [];
 let randomUserSeed = "teachinder-lab4";
 
 function formatUsers(users) {
-   /* for (let i = 0; i < users.length; i++) {
-        users[i].id = i + 1;
-        users[i].course = subjects[Math.floor(Math.random() * subjects.length)];
-        users[i].favourite = false;
-        users[i].bg_color = "#" + Math.floor(Math.random() * 16777215).toString(16);
-        users[i].note = users[i].note || "No notes available";
-    }*/
-
-    
-      return _.map(users, (user, index) => ({
-        ...user,
+    return _.map(users, (user, index) => _.assign({}, user, {
         id: index + 1,
         course: subjects[_.random(0, subjects.length - 1)],
         favourite: false,
         bg_color: "#" + _.random(0, 16777215).toString(16).padStart(6, '0'),
-        note: user.note || "No notes available"
-    })); 
+        note: _.defaultTo(_.get(user, "note"), "No notes available")
+    }));
 }
 
 function deleteDuplicates(randomUsers, additionalUsers) {
@@ -47,152 +37,167 @@ function deleteDuplicates(randomUsers, additionalUsers) {
     return uniqueUsers;
 }
 
-function isValidPhone(phone, country) {
-    if (typeof phone !== 'string') return false;
- 
-    const phoneFormats = {
-        'Germany': /^(\+49|0)[0-9\s\-]{6,15}$/,
-        'USA': /^(\+1|1)?[2-9]\d{2}[2-9]\d{6}$/,
-        'Ukraine': /^(\+380|0)\d{9}$/
+function getTeacherValue(teacher, field) {
+    const directFields = {
+        name: "full_name",
+        country: "country",
+        city: "city",
+        state: "state",
+        age: "age",
+        favorite: "favourite"
     };
-    const regex = phoneFormats[country] || /^\+?[0-9\s\-\(\)]{6,20}$/;
-    return regex.test(phone);
+    const nestedFields = {
+        country: "location.country",
+        city: "location.city",
+        state: "location.state",
+        age: "dob.age",
+        firstName: "name.first",
+        lastName: "name.last"
+    };
+
+    if (field === "full_name" || field === "name") {
+        const explicitName = _.get(teacher, "full_name");
+        return explicitName || _.compact([_.get(teacher, "name.first"), _.get(teacher, "name.last")]).join(" ");
+    }
+    if (_.has(nestedFields, field)) {
+        return _.defaultTo(_.get(teacher, nestedFields[field]), _.get(teacher, directFields[field]));
+    }
+    return _.get(teacher, directFields[field] || field);
+}
+
+function isValidPhone(phone, country) {
+    if (!_.isString(phone) || _.isEmpty(_.trim(phone))) return false;
+
+    const countryKey = _.toLower(_.trim(_.defaultTo(country, "")));
+    const digits = _.replace(phone, /\D/g, "");
+
+    if (_.includes(["usa", "united states"], countryKey)) {
+        const nationalNumber = digits.length === 11 && _.startsWith(digits, "1")
+            ? _.drop(digits).join("")
+            : digits;
+        return nationalNumber.length === 10 && /^[2-9]\d{2}[2-9]\d{6}$/.test(nationalNumber);
+    }
+    if (countryKey === "ukraine") {
+        const nationalNumber = _.startsWith(digits, "380")
+            ? digits.slice(3)
+            : (_.startsWith(digits, "0") ? digits.slice(1) : digits);
+        return nationalNumber.length === 9;
+    }
+    if (countryKey === "germany") {
+        const nationalNumber = _.startsWith(digits, "49")
+            ? digits.slice(2)
+            : (_.startsWith(digits, "0") ? digits.slice(1) : digits);
+        return nationalNumber.length >= 6 && nationalNumber.length <= 15;
+    }
+
+    return /^\+?[0-9\s\-()]{6,20}$/.test(_.trim(phone)) && digits.length >= 6;
 }
 
 function isValidEmail(email) {
-    if (typeof email !== 'string') return false;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    if (!_.isString(email)) return false;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(_.trim(email));
 }
 
 function isCapitalizedString(value) {
-    if (typeof value !== 'string' || value.length === 0) return false;
-    return value[0] === value[0].toUpperCase() && value[0] !== value[0].toLowerCase();
+    if (!_.isString(value) || _.isEmpty(_.trim(value))) return false;
+    const cleanedValue = _.trim(value);
+    const lowercaseValue = _.toLower(cleanedValue);
+    return (_.upperFirst(cleanedValue) === cleanedValue
+        && cleanedValue[0] !== _.toLower(cleanedValue[0]))
+        || _.includes(["male", "female"], lowercaseValue);
 }
 
 function validateUsers(users) {
-    return users.filter(user => {
+    return _.filter(_.isArray(users) ? users : [], teacher => {
+        const name = getTeacherValue(teacher, "name");
+        const fieldsToValidate = [
+            name,
+            getTeacherValue(teacher, "gender"),
+            getTeacherValue(teacher, "state"),
+            getTeacherValue(teacher, "city"),
+            getTeacherValue(teacher, "country")
+        ];
+        const age = getTeacherValue(teacher, "age");
 
-        const stringFields = ['full_name', 'gender', 'note', 'state', 'city', 'country'];
-        for (let field of stringFields) {
-            if (user[field] !== undefined && user[field] !== null) {
-                if (!isCapitalizedString(user[field])) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        }
-        if (typeof user.age !== 'number' || Number.isNaN(user.age)) {
-            return false;
-        }
-        if (!isValidPhone(user.phone, user.country)) {
-            return false;
-        }
-        if (!isValidEmail(user.email)) {
-            return false;
-        }
-        return true;
+        return _.every(fieldsToValidate, isCapitalizedString)
+            && !_.isNil(age)
+            && !_.isEmpty(_.trim(String(age)))
+            && _.isFinite(_.toNumber(age))
+            && isValidPhone(getTeacherValue(teacher, "phone"), getTeacherValue(teacher, "country"))
+            && isValidEmail(getTeacherValue(teacher, "email"));
     });
 }
 
 function validateTeacher(teacher) {
-    if (!teacher.full_name.trim()) return "Вкажіть ім’я та прізвище.";
-    if (!teacher.course || teacher.course === "Select a subject") return "Оберіть предмет.";
-    if (!teacher.country || teacher.country === "Select a region") return "Оберіть країну.";
-    if (!teacher.city.trim()) return "Вкажіть місто.";
-    if (!isValidEmail(teacher.email)) return "Вкажіть коректний email.";
-    if (!isValidPhone(teacher.phone, teacher.country)) return "Вкажіть коректний номер телефону.";
-    if (!teacher.gender) return "Оберіть стать.";
-    if (!teacher.dob.date || Number.isNaN(Date.parse(teacher.dob.date))) {
-        return "Вкажіть коректну дату народження.";
-    }
-    if (teacher.dob.date > new Date().toISOString().slice(0, 10)) {
-        return "Дата народження не може бути в майбутньому.";
-    }
-    if (!teacher.note.trim()) return "Додайте короткий опис.";
+    if (_.isEmpty(_.trim(_.get(teacher, "full_name", "")))) return "Вкажіть ім’я та прізвище.";
+    if (_.isEmpty(_.trim(_.get(teacher, "course", "")))) return "Оберіть предмет.";
+    if (_.isEmpty(_.trim(_.get(teacher, "country", "")))) return "Оберіть країну.";
+    if (_.isEmpty(_.trim(_.get(teacher, "city", "")))) return "Вкажіть місто.";
+    if (!isValidEmail(_.get(teacher, "email"))) return "Вкажіть коректний email.";
+    if (!isValidPhone(_.get(teacher, "phone"), _.get(teacher, "country"))) return "Вкажіть коректний номер телефону.";
+    if (_.isEmpty(_.get(teacher, "gender"))) return "Оберіть стать.";
+
+    const birthday = _.get(teacher, "dob.date");
+    if (!birthday || Number.isNaN(Date.parse(birthday))) return "Вкажіть коректну дату народження.";
+    if (birthday > new Date().toISOString().slice(0, 10)) return "Дата народження не може бути в майбутньому.";
+    if (_.isEmpty(_.trim(_.get(teacher, "note", "")))) return "Додайте короткий опис.";
 
     return null;
 }
 
 function filterUsers(users, filters = {}) {
-    return users.filter(user => {
+    return _.filter(_.isArray(users) ? users : [], teacher => {
+        const selectedCountry = _.toLower(_.trim(_.defaultTo(filters.country, "any")));
+        const selectedGender = _.toLower(_.trim(_.defaultTo(filters.gender, "any")));
+        const teacherCountry = _.toLower(_.trim(_.defaultTo(getTeacherValue(teacher, "country"), "")));
+        const teacherGender = _.toLower(_.trim(_.defaultTo(getTeacherValue(teacher, "gender"), "")));
+        const teacherAge = _.toNumber(getTeacherValue(teacher, "age"));
+        const teacherFavorite = _.defaultTo(_.get(teacher, "favourite"), _.get(teacher, "favorite", false));
 
-        if (filters.country !== undefined && user.country !== filters.country) {
-            return false;
+        if (selectedCountry !== "any" && selectedCountry !== teacherCountry) return false;
+        if (selectedGender !== "any" && selectedGender !== teacherGender) return false;
+
+        if (!_.isNil(filters.age) && filters.age !== "" && filters.age !== "Any") {
+            if (_.isNumber(filters.age) || /^\d+$/.test(String(filters.age))) {
+                if (teacherAge !== _.toNumber(filters.age)) return false;
+            } else if (_.includes(String(filters.age), "-")) {
+                const [minimum, maximum] = _.map(_.split(String(filters.age), "-"), _.toNumber);
+                if (teacherAge < minimum || teacherAge > maximum) return false;
+            } else if (filters.age === "51+" && teacherAge < 51) {
+                return false;
+            }
         }
 
-        if (filters.age !== undefined && user.age !== filters.age) {
-            return false;
-        }
+        if (!_.isNil(filters.favorite) && Boolean(teacherFavorite) !== Boolean(filters.favorite)) return false;
 
-        if (filters.gender !== undefined && user.gender !== filters.gender) {
-            return false;
-        }
-
-        if (filters.favorite !== undefined && user.favorite !== filters.favorite) {
-            return false;
+        if (filters.photo) {
+            const imageUrl = _.get(teacher, "picture.medium", "");
+            if (_.isEmpty(imageUrl) || _.includes(String(imageUrl), "placeholder")) return false;
         }
 
         return true;
     });
 }
 
-function sortUsers(users, sortBy = 'full_name', order = 'asc') {
-    const allowedFields = ['full_name', 'course', 'age', 'gender', 'country'];
-    
-    const modifier = order.toLowerCase() === 'desc' ? -1 : 1;
-
-    return [...users].sort((a, b) => {
-        let valA, valB;
-        if (sortBy === 'full_name') {
-            valA = `${a.name.first} ${a.name.last}`;
-            valB = `${b.name.first} ${b.name.last}`;
-        } else if (sortBy === 'age') {
-            valA = a.dob ? a.dob.age : a.age;
-            valB = b.dob ? b.dob.age : b.age;
-        } else if (sortBy === 'country') {
-            valA = a.location ? a.location.country : a.country;
-            valB = b.location ? b.location.country : b.country;
-        } else {
-            valA = a[sortBy];
-            valB = b[sortBy];
-        }
-
-        if (valA === undefined || valA === null) return 1;
-        if (valB === undefined || valB === null) return -1;
-
-        if (typeof valA === 'number' && typeof valB === 'number') {
-            return (valA - valB) * modifier;
-        }
-        
-        return String(valA).localeCompare(String(valB), undefined, { numeric: true, sensitivity: 'base' }) * modifier;
-    });
+function sortUsers(users, sortBy = "full_name", order = "asc") {
+    const allowedFields = ["full_name", "course", "age", "gender", "country"];
+    const sortField = _.includes(allowedFields, sortBy) ? sortBy : "full_name";
+    const sortValue = teacher => getTeacherValue(teacher, sortField);
+    return _.orderBy(_.isArray(users) ? users : [], [sortValue], [_.toLower(order) === "desc" ? "desc" : "asc"]);
 }
 
-
 function findUser(users, key, value) {
-    if (!users || !Array.isArray(users) || value === undefined || value === null) {
-        return null;
-    }
+    if (!_.isArray(users) || _.isNil(value)) return null;
 
-    const searchField = (key === 'name') ? 'full_name' : key;
-
-    return users.find(user => {
-        const fieldValue = user[searchField];
-
-        if (fieldValue === undefined || fieldValue === null) {
-            return false;
+    const searchField = key === "name" ? "full_name" : key;
+    const normalizedSearch = _.toLower(_.trim(String(value)));
+    return _.find(users, teacher => {
+        const fieldValue = getTeacherValue(teacher, searchField);
+        if (_.isNil(fieldValue)) return false;
+        if (searchField === "age" || _.isNumber(value)) {
+            return _.toNumber(fieldValue) === _.toNumber(value);
         }
-
-        if (typeof value === 'number' || searchField === 'age') {
-            return Number(fieldValue) === Number(value);
-        }
-
-        const strValue = String(value).toLowerCase().trim();
-        const strFieldValue = String(fieldValue).toLowerCase();
-
-        return strFieldValue.includes(strValue);
+        return _.includes(_.toLower(String(fieldValue)), normalizedSearch);
     }) || null;
 }
 
@@ -322,12 +327,27 @@ function updateBirthdayCountdown(teacher) {
 function showPopup(users=[]) {
     let popup = document.querySelector("#teacher-info");
     let teachers = document.querySelector("#teachers");
+    const closeButton = popup.querySelector(".close-popup");
+    const mapContainer = popup.querySelector("#map");
+    const mapToggle = popup.querySelector(".toggle-map");
 
-    popup.querySelector(".close-popup").addEventListener("click", function () {
+    closeButton.onclick = function () {
         popup.style.display = "none";
-    });
+    };
 
-    teachers.addEventListener("click", function (event) {
+    mapToggle.onclick = function () {
+        mapContainer.hidden = !mapContainer.hidden;
+        mapToggle.setAttribute("aria-expanded", String(!mapContainer.hidden));
+
+        if (!mapContainer.hidden && map && activeMapTeacher) {
+            requestAnimationFrame(() => {
+                map.invalidateSize({ pan: false });
+                MoveToMarker(activeMapTeacher);
+            });
+        }
+    };
+
+    teachers.onclick = function (event) {
         let article = event.target.closest(".teacher");
 
         if (!article || !teachers.contains(article)) return;
@@ -359,10 +379,12 @@ function showPopup(users=[]) {
         popup.querySelector(".teacher-email").textContent = teacher.email;
         popup.querySelector(".favorite-star").textContent =
             teacher.favourite ? "★" : "☆";
-            MoveToMarker(teacher);  
-    });
+        mapToggle.setAttribute("aria-expanded", String(!mapContainer.hidden));
+        MoveToMarker(teacher);
+    };
 }
 let map;
+let activeMapTeacher = null;
 const teacherMarkers = new WeakMap();
 
 function getTeacherCoordinates(user) {
@@ -406,18 +428,21 @@ function addTeacherMarker(user) {
 }
 
 function MoveToMarker(user) {
-    if (!user || !getTeacherCoordinates(user)) return;
+    if (!user) return;
+    activeMapTeacher = user;
+    const coordinates = getTeacherCoordinates(user);
+    if (!coordinates) return;
     if (!map) initMap([user]);
     if (!map) return;
 
     const marker = addTeacherMarker(user);
     if (!marker) return;
 
-    const coordinates = getTeacherCoordinates(user);
     requestAnimationFrame(() => {
         if (!map) return;
-        map.invalidateSize({ pan: false });
         map.setView(coordinates, 13);
+        if (document.querySelector("#map").hidden) return;
+        map.invalidateSize({ pan: false });
         marker.openPopup();
     });
 }
@@ -569,45 +594,14 @@ function filterFavourites(){
 
 function AllFilter()
 {
-        let filteredUsers = users.filter(user => {
-        
-        if (photo) {
-            const medium = user.picture ? user.picture.medium : "";
-            const large = user.picture ? user.picture.large : "";
-            let hasRealPhoto = medium !== "https://via.placeholder.com/150" && large !== "https://via.placeholder.com/300";
-            if (!hasRealPhoto) return false;
-        }
-
-        if (sex.toLowerCase() !== "any") {
-            if (!user.gender || user.gender.toLowerCase() !== sex.toLowerCase()) {
-                return false;
-            }
-        }
-
-        if (age !== "" && age !== "Any") {
-            let userAge = user.dob ? user.dob.age : user.age;
-            if (age.includes("-")) {
-                let ageRange = age.split("-").map(Number);
-                if (userAge < ageRange[0] || userAge > ageRange[1]) return false;
-            } else if (age === "51+") {
-                if (userAge < 51) return false;
-            }
-        }
-
-        if (country.toLowerCase() !== "any") {
-            let userCountry = user.location ? user.location.country : user.country;
-            if (!userCountry || userCountry.toLowerCase() !== country) {
-                return false;
-            }
-        }
-
-        if (favourite && !user.favourite) {
-            return false;
-        }
-
-        return true;
+    const filteredUsers = filterUsers(users, {
+        country,
+        age,
+        gender: sex,
+        photo,
+        favorite: favourite ? true : undefined
     });
-   
+
     renderTeacher(filteredUsers);
     showPopup(filteredUsers);
     return filteredUsers;
@@ -620,10 +614,20 @@ function searchTeacher(){
     let input = document.querySelector("#search-input");
   
     searchButton.addEventListener("click", function(){
-        let filteredUsers = users.filter(user => {
-            return user.name.first.toLowerCase().includes(input.value.toLowerCase()) || 
-            user.note?.toLowerCase().includes(input.value.toLowerCase()) ||
-            user.dob.age === parseInt(input.value);
+        const query = _.toLower(_.trim(input.value));
+        const ageQuery = /^\d+$/.test(query) ? _.toNumber(query) : null;
+        const filteredUsers = _.filter(users, teacher => {
+            const searchableValues = [
+                getTeacherValue(teacher, "name"),
+                _.get(teacher, "note"),
+                getTeacherValue(teacher, "country"),
+                _.get(teacher, "course")
+            ];
+            const matchesText = _.some(searchableValues, value =>
+                !_.isNil(value) && _.includes(_.toLower(String(value)), query)
+            );
+            const matchesAge = ageQuery !== null && _.toNumber(getTeacherValue(teacher, "age")) === ageQuery;
+            return _.isEmpty(query) || matchesText || matchesAge;
         });
         renderTeacher(filteredUsers);
         showPopup(filteredUsers);
