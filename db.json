@@ -1,0 +1,63 @@
+{
+  "teachers": [
+    {
+      "id": "KpHyqC5I8O8",
+      "full_name": "Diana Deiner",
+      "name": {
+        "first": "Diana",
+        "last": "Deiner"
+      },
+      "gender": "female",
+      "course": "Mathematics",
+      "age": 20,
+      "dob": {
+        "age": 20,
+        "date": "2006-08-25"
+      },
+      "email": "di.oliinyk@ukma.edu.ua",
+      "phone": "+380978257593",
+      "city": "Marsaille",
+      "country": "France",
+      "location": {
+        "city": "Marsaille",
+        "country": "France"
+      },
+      "picture": {
+        "medium": "https://via.placeholder.com/150",
+        "large": "https://via.placeholder.com/300"
+      },
+      "note": "My bio",
+      "favourite": false
+    },
+    {
+      "id": "KAlBklQX7PM",
+      "full_name": "Diana Olyinyk",
+      "name": {
+        "first": "Diana",
+        "last": "Olyinyk"
+      },
+      "gender": "female",
+      "course": "Mathematics",
+      "age": 20,
+      "dob": {
+        "age": 20,
+        "date": "2006-08-25"
+      },
+      "email": "di.oliinyk@ukma.edu.ua",
+      "phone": "+380978257593",
+      "city": "Kyiv",
+      "country": "Ukraine",
+      "location": {
+        "city": "Kyiv",
+        "country": "Ukraine"
+      },
+      "picture": {
+        "medium": "https://via.placeholder.com/150",
+        "large": "https://via.placeholder.com/300"
+      },
+      "note": "Some info",
+      "favourite": false
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
